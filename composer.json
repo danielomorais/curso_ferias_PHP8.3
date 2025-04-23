@@ -1,0 +1,20 @@
+{
+    "name": "danol/curso_ferias",
+    "description": "Meu primeiro programa com Composer",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Daniel Morais",
+            "email": "dan.oliveira972@gmail.com"
+        }
+    ],
+    "require": {
+        "guzzlehttp/guzzle": "^7.0"
+    }
+}
