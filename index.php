@@ -21,8 +21,22 @@ caso não seja realizada a conexão com o banco de dados
 try { 
     $pdo = new PDO($dsn, $user, $password, $options);
     $id = $_GET['id'] ?? '';
+
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $nomeDoProduto = $_POST['nome'];
+        $descricaoDoProduto = $_POST['descricao'];
+        $precoDoProduto = $_POST['preco'];
+
+        $sql = "INSERT INTO produtos (nome, descricao, preco) VALUES (:nome, :descricao, :preco)";
+        $statement = $pdo->prepare($sql);
+        $statement->bindParam(':nome', $nomeDoProduto);
+        $statement->bindParam(':descricao', $descricaoDoProduto);
+        $statement->bindParam(':preco', $precoDoProduto);
+        $statement->execute();
+    }
+
     $sql = 'SELECT `p`.`id`, `c`.`titulo` AS `categoria`, `p`.`nome`, `p`.`descricao`, `p`.`preco` FROM produtos AS `p`
-            INNER JOIN categorias AS `c` ON `c`.`id` = `p`.`categoria_id` ';
+            LEFT JOIN categorias AS `c` ON `c`.`id` = `p`.`categoria_id`';
     $statement = $pdo->query($sql);
     $produtos = $statement->fetchAll();
 } catch (PDOException $exception) {
@@ -44,7 +58,7 @@ try {
             <div class="col-md-12">
                 <h1 class="mt-5 mb-4">Meus produtos</h1>
                 
-                <table class="table table-dark table-striped">
+                <table class="table table-dark table-hover table-striped">
                     <tr>
                         <th>ID</th>
                         <th>Nome do produto</th>
@@ -63,6 +77,28 @@ try {
 
                 </table>
 
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <h2 class="mt-5 mb-4">Cadasto de produtos</h2>
+
+                <form action="" method="post">
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Produto</label>
+                        <input type="text" class="form-control" id="nome" name="nome">
+                    </div>
+                    <div class="mb-3">
+                        <label for="descricao" class="form-label">Descrição</label>
+                        <input type="text" class="form-control" id="descricao" name="descricao">
+                    </div>
+                    <div class="mb-3">
+                        <label for="preco" class="form-label">Preço</label>
+                        <input type="text" class="form-control" id="preco" name="preco">
+                    </div>
+                    <button class="btn btn-success">Cadastrar</button>
+                </form>
             </div>
         </div>
     </div>
