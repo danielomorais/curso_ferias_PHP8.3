@@ -20,14 +20,13 @@ caso não seja realizada a conexão com o banco de dados
 */
 try { 
     $pdo = new PDO($dsn, $user, $password, $options);
-    $sql = ' SELECT `p`.`id`, `c`.`titulo` AS `categoria`, `p`.`nome`, `p`.`descricao`, `p`.`preco` FROM produtos AS `p`
-        INNER JOIN categorias AS `c` ON `c`.`id` = `p`.`categoria_id`';
+    $sql = 'SELECT `p`.`id`, `c`.`titulo` AS `categoria`, `p`.`nome`, `p`.`descricao`, `p`.`preco` FROM produtos AS `p`
+            INNER JOIN categorias AS `c` ON `c`.`id` = `p`.`categoria_id`
+            WHERE `p`.`id` = 3';
     $statement = $pdo->query($sql);
-    $produtos = $statement->fetchAll();
+    $produto = $statement->fetch();
     
-    foreach ($produtos as $produtos) {
-        echo "O produto {$produtos['nome']}, da categoria {$produtos['categoria']}, custa R$ " . number_format($produtos['preco'], 2, ',', '.') . "<br>";
-    }
+    echo "O produto {$produto['nome']}, da categoria {$produto['categoria']}, custa R$ " . number_format($produto['preco'], 2, ',', '.') . "<br>";   
     
 } catch (PDOException $exception) {
     die("Não foi possível se conectar com o banco de dados. Motivo: {$exception->getMessage()}");
