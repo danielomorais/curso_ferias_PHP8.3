@@ -20,13 +20,21 @@ caso não seja realizada a conexão com o banco de dados
 */
 try { 
     $pdo = new PDO($dsn, $user, $password, $options);
+    $id = $_GET['id'] ?? '';
     $sql = 'SELECT `p`.`id`, `c`.`titulo` AS `categoria`, `p`.`nome`, `p`.`descricao`, `p`.`preco` FROM produtos AS `p`
             INNER JOIN categorias AS `c` ON `c`.`id` = `p`.`categoria_id`
-            WHERE `p`.`id` = 3';
-    $statement = $pdo->query($sql);
+            WHERE `p`.`id` = :id
+            ';
+    $statement = $pdo->prepare($sql);
+    $statement->bindParam(':id', $id, PDO::PARAM_INT);
+    $statement->execute();
     $produto = $statement->fetch();
-    
-    echo "O produto {$produto['nome']}, da categoria {$produto['categoria']}, custa R$ " . number_format($produto['preco'], 2, ',', '.') . "<br>";   
+
+    if ($produto) {
+        echo "O produto {$produto['nome']}, da categoria {$produto['categoria']}, custa R$ " . number_format($produto['preco'], 2, ',', '.') . "<br>";
+    } else {
+        echo "ID do produto não fornecido ou inválido!";
+    }
     
 } catch (PDOException $exception) {
     die("Não foi possível se conectar com o banco de dados. Motivo: {$exception->getMessage()}");
