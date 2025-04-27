@@ -1,7 +1,8 @@
 <?php
 
-// Chamando conexção com o DB
+// Chamando conexção com o DB e outras funções q fazem tudo funcionar
 require_once __DIR__ . '/database.php';  
+require_once __DIR__ . '/functions/gerenciar_produto.php';
 
 // Realizando tratativa, que não é obrigatório porém é últil para tratar erros caso não seja realizada
 // a conexão com o banco de dados
@@ -11,40 +12,26 @@ try {
     $id = $_GET['id'] ?? '';
 
     // === DELEÇÃO ===
-
     $idProdutoDeletar = $_GET['deletar'] ?? '';
     
     if (!empty($idProdutoDeletar)) {
-        // Lógica para deletar produto no banco de dados
 
-        $sql = "DELETE FROM produtos WHERE id = :id";
-
-        $statement = $pdo->prepare($sql);
-        $statement->bindParam(':id', $idProdutoDeletar);
-        $statement->execute();
+        deletarProduto($pdo, $idProdutoDeletar);
     }
     // === FIM DELEÇÃO ===
 
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // === CADASTRO ===
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {   
+
         $nomeDoProduto = $_POST['nome'];
         $descricaoDoProduto = $_POST['descricao'];
         $precoDoProduto = $_POST['preco'];
 
-        $sql = "INSERT INTO produtos (nome, descricao, preco) VALUES (:nome, :descricao, :preco)";
-        $statement = $pdo->prepare($sql);
-        $statement->bindParam(':nome', $nomeDoProduto);
-        $statement->bindParam(':descricao', $descricaoDoProduto);
-        $statement->bindParam(':preco', $precoDoProduto);
-        $statement->execute();
+        cadastrarProduto($pdo, $nomeDoProduto, $descricaoDoProduto, $precoDoProduto);
     }
+    // === FIM CADASTRO ===
 
-    $sql = 'SELECT `p`.`id`, `c`.`titulo` AS `categoria`, `p`.`nome`, `p`.`descricao`, `p`.`preco` 
-            FROM produtos AS `p`
-            LEFT JOIN categorias AS `c` ON `c`.`id` = `p`.`categoria_id`
-            ';
-
-    $statement = $pdo->query($sql);
-    $produtos = $statement->fetchAll();
+    $produtos = obterTodosProdutos($pdo);
 
 } catch (PDOException $exception) {
     die("Não foi possível se conectar com o banco de dados. Motivo: {$exception->getMessage()}");
@@ -79,10 +66,10 @@ try {
                         <td><?php echo $produto['id']?></td>
                         <td><?php echo $produto['nome']?></td>
                         <td><?php echo $produto['categoria']?></td>
-                        <td><?php echo number_format($produto['preco'], 2, ',', '.'); ?></td>
+                        <td>R$ <?php echo number_format($produto['preco'], 2, ',', '.'); ?></td>
                         <td>
                             <a class="btn btn-primary btn-sm" href='atualizar.php?id=<?php echo $produto['id']?>'>Editar</a> |
-                            <a class="btn btn-danger btn-sm" href='index.php?deletar=<?php echo $produto['id']?>'>Excluir</a>
+                            <a class="btn btn-danger btn-sm" onclick="confirmarDelecao('<?php echo $produto['id']?>')" href='#'>Excluir</a>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -115,5 +102,12 @@ try {
         </div>
     </div>
 
+    <script>
+        function confirmarDelecao(idProduto) {
+            if (confirm('Tem certeza de que deseja excluir este produto?')) {
+                window.location = `index.php?deletar=${idProduto}`
+            }
+        }
+    </script>
 </body>
 </html>

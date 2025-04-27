@@ -1,7 +1,8 @@
 <?php
 
 // Chamando conexção com o DB
-require_once __DIR__ . '/database.php'; 
+require_once __DIR__ . '/database.php';
+require_once __DIR__ . '/functions/gerenciar_produto.php';
 
 // Realizando tratativa, que não é obrigatório porém é últil para tratar erros caso não seja realizada
 // a conexão com o banco de dados
@@ -11,28 +12,17 @@ try {
     $id = $_GET['id'] ?? '';
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
         $nomeDoProduto = $_POST['nome'];
         $descricaoDoProduto = $_POST['descricao'];
         $precoDoProduto = $_POST['preco'];
 
-        $sql = "UPDATE produtos SET nome = :nome, descricao = :descricao, preco = :preco WHERE id = :id";
-        
-        $statement = $pdo->prepare($sql);
-        $statement->bindParam(':nome', $nomeDoProduto);
-        $statement->bindParam(':descricao', $descricaoDoProduto);
-        $statement->bindParam(':preco', $precoDoProduto);
-        $statement->bindParam(':id', $id);
-        $statement->execute();
+        atualizarProduto($pdo, $nomeDoProduto, $descricaoDoProduto, $precoDoProduto, $id);
 
         header('location: index.php');
     }
 
-    $sql = 'SELECT * FROM produtos WHERE id = :id';
-    $statement = $pdo->prepare($sql);
-    $statement->bindParam(':id', $id);
-    $statement->execute();
-
-    $produto = $statement->fetch();
+    $produto = obterProdutoPorId($pdo, $id);
 
 } catch (PDOException $exception) {
     die("Não foi possível se conectar com o banco de dados. Motivo: {$exception->getMessage()}");
