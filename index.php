@@ -1,26 +1,29 @@
 <?php
-// Configurando onde a integração do DB será feita definindo o seguinte;
-$host = 'localhost';
-$db = 'curso_ferias';
-$user = 'root';
-$password = '';
-$charset = 'utf8mb4';
-$dsn = "mysql:host={$host};dbname={$db};charset={$charset}";
 
-// Informando as opções de como será o formato dos dados recebidos e como serão tratados;
-$options = [
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_EMULATE_PREPARES => false
-]; 
+// Chamando conexção com o DB
+require_once __DIR__ . '/database.php';  
 
-/* 
-Não é obrigatório porém é últil para tratar erros
-caso não seja realizada a conexão com o banco de dados
-*/
+// Realizando tratativa, que não é obrigatório porém é últil para tratar erros caso não seja realizada
+// a conexão com o banco de dados
+
 try { 
     $pdo = new PDO($dsn, $user, $password, $options);
     $id = $_GET['id'] ?? '';
+
+    // === DELEÇÃO ===
+
+    $idProdutoDeletar = $_GET['deletar'] ?? '';
+    
+    if (!empty($idProdutoDeletar)) {
+        // Lógica para deletar produto no banco de dados
+
+        $sql = "DELETE FROM produtos WHERE id = :id";
+
+        $statement = $pdo->prepare($sql);
+        $statement->bindParam(':id', $idProdutoDeletar);
+        $statement->execute();
+    }
+    // === FIM DELEÇÃO ===
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $nomeDoProduto = $_POST['nome'];
@@ -35,10 +38,14 @@ try {
         $statement->execute();
     }
 
-    $sql = 'SELECT `p`.`id`, `c`.`titulo` AS `categoria`, `p`.`nome`, `p`.`descricao`, `p`.`preco` FROM produtos AS `p`
-            LEFT JOIN categorias AS `c` ON `c`.`id` = `p`.`categoria_id`';
+    $sql = 'SELECT `p`.`id`, `c`.`titulo` AS `categoria`, `p`.`nome`, `p`.`descricao`, `p`.`preco` 
+            FROM produtos AS `p`
+            LEFT JOIN categorias AS `c` ON `c`.`id` = `p`.`categoria_id`
+            ';
+
     $statement = $pdo->query($sql);
     $produtos = $statement->fetchAll();
+
 } catch (PDOException $exception) {
     die("Não foi possível se conectar com o banco de dados. Motivo: {$exception->getMessage()}");
 }; 
@@ -64,6 +71,7 @@ try {
                         <th>Nome do produto</th>
                         <th>Categoria do produto</th>
                         <th>Preço do produto</th>
+                        <th>Ação</th>
                     </tr>
 
                     <?php foreach($produtos as $produto): ?>
@@ -72,6 +80,10 @@ try {
                         <td><?php echo $produto['nome']?></td>
                         <td><?php echo $produto['categoria']?></td>
                         <td><?php echo number_format($produto['preco'], 2, ',', '.'); ?></td>
+                        <td>
+                            <a class="btn btn-primary btn-sm" href='atualizar.php?id=<?php echo $produto['id']?>'>Editar</a> |
+                            <a class="btn btn-danger btn-sm" href='index.php?deletar=<?php echo $produto['id']?>'>Excluir</a>
+                        </td>
                     </tr>
                     <?php endforeach; ?>
 
